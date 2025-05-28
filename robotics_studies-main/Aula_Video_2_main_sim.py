@@ -67,7 +67,7 @@ else:
         Kp[i, i] = default_kp_val
         Kd[i, i] = default_kd_val
 
-
+#A$
 t = 0
 
 # --- Loop de Simulação e Controle ---
