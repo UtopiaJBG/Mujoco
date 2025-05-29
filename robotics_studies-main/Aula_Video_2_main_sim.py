@@ -21,14 +21,10 @@ except Exception as e:
 # Criar a estrutura de dados da simulação (MjData)
 data = mujoco.MjData(model)
 
-# Parâmetros da simulação e controle
-# n_timesteps do script original: 10 segundos com timestep de 0.002 (do modelo)
-n_timesteps = int(10 / model.opt.timestep)
-nq = model.nq       # Número de coordenadas generalizadas (posições)
-nv = model.nv       # Número de graus de liberdade (velocidades)
-
-# Arrays para log (usando nq para qpos)
-qlog = np.zeros((n_timesteps, nq))
+# sim = mujoco.MjSim(model) # VERSAO ANTIGA
+ 
+data = mujoco.MjData(model) # VERSAO NOVA
+# sim = mujoco.MjSim(model, data) # VERSAO NOVA 
 
 # --- Parâmetros do Controlador (do script original) ---
 # Estado desejado
