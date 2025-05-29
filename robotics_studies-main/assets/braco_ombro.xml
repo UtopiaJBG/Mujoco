@@ -1,0 +1,37 @@
+<mujoco model="braco_ombro">
+
+  <include file="scene.xml"/>
+  <!-- precisa desse para ter o background -->
+
+  <option solver="CG" tolerance="1e-6"/>
+  <size nconmax="50" njmax="500" nstack="50000"/>
+  <!-- esses dois parecem ser configurações de desempenho -->
+
+  <worldbody>
+    <body name='braco' pos='0 0 0.5'>
+      <geom type='capsule' fromto='0 0 0 0.45 0 0' size='0.05' rgba='1 0.5 0 1'/>
+      
+      <site name='ombro' rgba='0 0 0 1' pos='0 0 0'/>
+      <site name='ombro_visual' rgba='0 0 0 1' pos='0 0 0.035'/>
+      
+      <joint name='ombro' type='hinge' pos='0 0 0' axis='0 0 1' limited='true' range='-100 100'/>
+              <!-- range='-100 100' é um valor que parece ser o range do ombro -->
+
+      <site name='cotovelo' rgba='0 0 0 1' pos='0.45 0 0'/>
+      <site name='cotovelo_visual' rgba='0 0 0 1' pos='0.45 0 0.035'/>
+     
+      <body name='antebraco' pos='0.45 0 0'>
+        <geom type='capsule' fromto='0 0 0 0.5 0 0' size='0.035' rgba='1 1 0 1'/>
+        <joint name='cotovelo' type='hinge' pos='0 0 0' axis='0 0 1' limited='true' range='0 150'/>
+              <!-- range='0 150' é um valor que parece ser o range do cotovelo -->
+
+        <site name='mao' rgba='0 0 0 1' pos='0.5 0 0'/>
+        <site name='mao_visual' rgba='0 0 0 1' pos='0.5 0 0.035'/>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name='motor_ombro' joint='ombro' gear='1'/>
+    <motor name='motor_cotovelo' joint='cotovelo' gear='1'/>
+  </actuator>
+</mujoco>

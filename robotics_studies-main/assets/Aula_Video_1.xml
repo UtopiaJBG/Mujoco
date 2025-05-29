@@ -8,14 +8,14 @@
             https://www.roboti.us/resourcelicense.txt
     -->
 
-    <include file="scene.xml"/>
+    <include file="secne.xml"/>
 
-    <option solver="CG" tolerance="1e-6"/>
+    <option solver="CG" tolerance="1e-6"/> 
 
     <size nconmax="50" njmax="500" nstack="50000"/>
 <!-- Dimensões de alocação -> numero máximo de contatos que o modelo pode fazer / numero jacobianos / numero da pilha -> problema maior em coisas mais flexiveis  -->
     <worldbody>
-      <body name="link1_forreal" pos="0 0 0.5" quat="0.707 0 0 0.707">     <!-- Modelo que vamos trabalhar - quat="0.707 0 0 0.707" ou  euler="0 0 90" > rotaciona 90 graus em torno de Z--> 
+        <body name="link1_forreal" pos="0 0 0.5" quat="0.707 0 0 0.707">     <!-- Modelo que vamos trabalhar - quat="0.707 0 0 0.707" ou  euler="0 0 90" > rotaciona 90 graus em torno de Z--> 
           <!-- <geom type="capsule" fromto="-0.25 0 0 0.25 0.25 0" size="0.05" rgba="0.15 0.5 0.15 1"/>    -->
                     <!-- Colocar esse segundo 0.25 (o do meio) faz com que ele rotacione 45 graus - O Geom rotaciona mas o body não --> 
                     <!-- Geometria do modelo - capsule (PODE SER cylinder por exemplo) -> cilindro com uma esfera em cada ponta - fromto é um vertor que comeca em 0 0 0 e acaba em 0.25 0 0 -->
