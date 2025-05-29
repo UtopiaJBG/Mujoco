@@ -37,6 +37,7 @@ def comp_gravity(sim):
     Jp_shape = (3, sim.model.nv)
     comp = np.zeros((sim.model.nv,))
     for body, mass in zip(name_bodies, mass_links):
+        
         Jp = sim.data.get_body_jacp(body).reshape(Jp_shape)
         comp = comp - np.dot(Jp.T, sim.model.opt.gravity * mass)
     return comp

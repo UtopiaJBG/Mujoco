@@ -228,3 +228,16 @@ Sensor
 data.sensordata
 array([], dtype=float64)
 
+
+####################################################################################################
+
+ID 2 NAME 
+
+data.model.body(1).name
+'link1'
+data.model.body(2).name
+'link2'
+
+
+
+data.model.nbody # Ajuste para pegar os corpos corretos do modelo específico

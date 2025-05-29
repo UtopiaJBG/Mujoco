@@ -81,43 +81,49 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 
 # H = np.zeros(7*7)
 
-# def comp_gravity(sim):
-#     name_bodies = [sim.model.body_id2name(i) for i in range(4, 11)]
-#     mass_links = sim.model.body_mass[4:11]
-#     Jp_shape = (3, sim.model.nv)
-#     comp = np.zeros((sim.model.nv,))
-#     for body, mass in zip(name_bodies, mass_links):
-#         Jp = sim.data.get_body_jacp(body).reshape(Jp_shape)
-#         comp = comp - np.dot(Jp.T, sim.model.opt.gravity * mass)
-#     return comp
+def comp_gravity(data):
+    name_bodies = [data.model.body(i).name for i in range(1, data.model.nbody)] # Ajuste para pegar os corpos corretos
+    mass_links = data.model.body_mass[1:data.model.nbody] # Ajuste para pegar os corpos corretos
 
-try:
-    while t < n_timesteps:
+    Jp_shape = np.zeros(3, data.model.nv)
+    comp = np.zeros((data.model.nv,))
 
-        qlog[t] = sim.data.qpos
+    for body, mass in zip(name_bodies, mass_links):
 
-        qvel = sim.data.qvel
-        qpos = sim.data.qpos
+        Jp = sim.data.get_body_jacp(body).reshape(Jp_shape)
+        comp -= comp - np.dot(Jp.T, sim.model.opt.gravity * mass)
+        
+    return comp
 
-        qpos_erro = qpos_d - qpos
-        qvel_erro = qvel_d - qvel
 
-        C_eq = sim.data.qfrc_bias  # C_eq = C*qvel + tau_g
 
-        v = qacc_d + Kd.dot(qvel_d - qvel) + Kp.dot(qpos_d - qpos)
+# try:
+#     while t < n_timesteps:
 
-        mujoco_py.functions.mj_fullM(sim.model, H, sim.data.qM)
+#         qlog[t] = sim.data.qpos
 
-        u = np.reshape(H, (7, 7)).dot(v) + C_eq
+#         qvel = sim.data.qvel
+#         qpos = sim.data.qpos
 
-        sim.data.ctrl[:] = u
+#         qpos_erro = qpos_d - qpos
+#         qvel_erro = qvel_d - qvel
 
-        sim.step()
-        viewer.render()
-        t += 1
+#         C_eq = sim.data.qfrc_bias  # C_eq = C*qvel + tau_g
 
-except KeyboardInterrupt:
-    print("saindo")
+#         v = qacc_d + Kd.dot(qvel_d - qvel) + Kp.dot(qpos_d - qpos)
+
+#         mujoco_py.functions.mj_fullM(sim.model, H, sim.data.qM)
+
+#         u = np.reshape(H, (7, 7)).dot(v) + C_eq
+
+#         sim.data.ctrl[:] = u
+
+#         sim.step()
+#         viewer.render()
+#         t += 1
+
+# except KeyboardInterrupt:
+#     print("saindo")
 
 # plt.plot(qlog)
 # plt.plot([qpos_d for _ in range(n_timesteps)], 'k--')
