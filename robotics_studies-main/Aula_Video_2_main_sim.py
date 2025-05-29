@@ -5,27 +5,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-SCRIPT_ABSOLUTE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_XML_PATH = os.path.join(SCRIPT_ABSOLUTE_DIR, "assets", "two_link.xml")
-
+MODEL_XML_PATH = os.path.join("assets", "two_link.xml")
+print(os.path.exists(MODEL_XML_PATH))  # Verifica se o caminho do arquivo XML existe
 model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
 print(f"Modelo XML: {MODEL_XML_PATH}")
 
 ################################################################################### 
 
-# sim = mujoco.MjSim(model) # VERSAO ANTIGA
+# # sim = mujoco.MjSim(model) # VERSAO ANTIGA
  
 data = mujoco.MjData(model) # VERSAO NOVA
-# sim = mujoco.MjSim(model, data) # VERSAO NOVA 
+# # sim = mujoco.MjSim(model, data) # VERSAO NOVA 
 
 t = 0 # Tempo inicial
 
-#Forma para carregar o Launcher do visualizador na nova API
+# #Forma para carregar o Launcher do visualizador na nova API
 
 with mujoco.viewer.launch_passive(model, data) as viewer: 
     while viewer.is_running():
         mujoco.mj_step(model, data)
         viewer.sync()
+
 
 
 # Visualizador com tempo de simulação controlado (t < 500 controla o número de iterações)
@@ -91,33 +91,33 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 #         comp = comp - np.dot(Jp.T, sim.model.opt.gravity * mass)
 #     return comp
 
-# try:
-#     while t < n_timesteps:
+try:
+    while t < n_timesteps:
 
-#         qlog[t] = sim.data.qpos
+        qlog[t] = sim.data.qpos
 
-#         qvel = sim.data.qvel
-#         qpos = sim.data.qpos
+        qvel = sim.data.qvel
+        qpos = sim.data.qpos
 
-#         qpos_erro = qpos_d - qpos
-#         qvel_erro = qvel_d - qvel
+        qpos_erro = qpos_d - qpos
+        qvel_erro = qvel_d - qvel
 
-#         C_eq = sim.data.qfrc_bias  # C_eq = C*qvel + tau_g
+        C_eq = sim.data.qfrc_bias  # C_eq = C*qvel + tau_g
 
-#         v = qacc_d + Kd.dot(qvel_d - qvel) + Kp.dot(qpos_d - qpos)
+        v = qacc_d + Kd.dot(qvel_d - qvel) + Kp.dot(qpos_d - qpos)
 
-#         mujoco_py.functions.mj_fullM(sim.model, H, sim.data.qM)
+        mujoco_py.functions.mj_fullM(sim.model, H, sim.data.qM)
 
-#         u = np.reshape(H, (7, 7)).dot(v) + C_eq
+        u = np.reshape(H, (7, 7)).dot(v) + C_eq
 
-#         sim.data.ctrl[:] = u
+        sim.data.ctrl[:] = u
 
-#         sim.step()
-#         viewer.render()
-#         t += 1
+        sim.step()
+        viewer.render()
+        t += 1
 
-# except KeyboardInterrupt:
-#     print("saindo")
+except KeyboardInterrupt:
+    print("saindo")
 
 # plt.plot(qlog)
 # plt.plot([qpos_d for _ in range(n_timesteps)], 'k--')

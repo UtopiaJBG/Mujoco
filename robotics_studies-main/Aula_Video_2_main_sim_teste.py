@@ -15,7 +15,7 @@ try:
     print(f"Carregando modelo de: {MODEL_XML_PATH}")
     model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
 except Exception as e:
-    print(f"Erro ao carregar o modelo XML: {e}")a
+    print(f"Erro ao carregar o modelo XML: {e}")
     exit(-1)
 
 # Criar a estrutura de dados da simulação (MjData)
