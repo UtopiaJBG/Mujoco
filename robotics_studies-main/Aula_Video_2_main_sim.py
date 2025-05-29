@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 import mujoco
 import mujoco.viewer # Novo módulo para o visualizador VERSAO NOVA :D
 import numpy as np
@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 
 MODEL_XML_PATH = os.path.join("assets", "two_link.xml")
-print(os.path.exists(MODEL_XML_PATH))  # Verifica se o caminho do arquivo XML existe
+print(os.path.exists(MODEL_XML_PATH)) 
 model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
 print(f"Modelo XML: {MODEL_XML_PATH}")
 

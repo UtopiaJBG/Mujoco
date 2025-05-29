@@ -5,18 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# --- Definições e Inicializações ---
-SCRIPT_ABSOLUTE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-MODEL_XML_PATH = os.path.join(SCRIPT_ABSOLUTE_DIR, "assets", "full_kuka_all_joints_gravity.xml")
+MODEL_XML_PATH = os.path.join("assets", "full_kuka_all_joints_gravity.xml")
+print(os.path.exists(MODEL_XML_PATH))  
+model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
 print(f"Modelo XML: {MODEL_XML_PATH}")
-# Carregar o modelo MuJoCo
-try:
-    print(f"Carregando modelo de: {MODEL_XML_PATH}")
-    model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
-except Exception as e:
-    print(f"Erro ao carregar o modelo XML: {e}")
-    exit(-1)
 
 # Criar a estrutura de dados da simulação (MjData)
 data = mujoco.MjData(model)
