@@ -1,0 +1,230 @@
+Encontrar muitas informações utilizando o 
+
+DEBUG CONSOLE 
+
+Tem que usar o F5 também para iniciar o debug
+
+
+Exemplo: 
+
+data.model
+<mujoco._structs.MjModel object at 0x00000245BB519730>
+>
+data.model.body(0)
+<_MjModelBodyViews
+  dofadr: array([-1], dtype=int32)
+  dofnum: array([0], dtype=int32)
+  geomadr: array([0], dtype=int32)
+  geomnum: array([1], dtype=int32)
+  id: 0
+  inertia: array([0., 0., 0.])
+  invweight0: array([0., 0.])
+  ipos: array([0., 0., 0.])
+  iquat: array([1., 0., 0., 0.])
+  jntadr: array([-1], dtype=int32)
+  jntnum: array([0], dtype=int32)
+  mass: array([0.])
+  mocapid: array([-1], dtype=int32)
+  name: 'world'
+  parentid: array([0], dtype=int32)
+  pos: array([0., 0., 0.])
+  quat: array([1., 0., 0., 0.])
+  rootid: array([0], dtype=int32)
+  sameframe: array([1], dtype=uint8)
+  simple: array([1], dtype=uint8)
+  subtreemass: array([3.62880131])
+  user: array([], dtype=float64)
+  weldid: array([0], dtype=int32)
+>
+data.model.body(1)
+<_MjModelBodyViews
+  dofadr: array([0], dtype=int32)
+  dofnum: array([1], dtype=int32)
+  geomadr: array([1], dtype=int32)
+  geomnum: array([1], dtype=int32)
+  id: 1
+  inertia: array([0.02261292, 0.02261292, 0.00297797])
+  invweight0: array([0.0612556, 3.9203586])
+  ipos: array([0.125, 0.   , 0.   ])
+  iquat: array([ 0.70710678,  0.        , -0.70710678,  0.        ])
+  jntadr: array([0], dtype=int32)
+  jntnum: array([1], dtype=int32)
+  mass: array([2.48709418])
+  mocapid: array([-1], dtype=int32)
+  name: 'link1'
+  parentid: array([0], dtype=int32)
+  pos: array([0. , 0. , 0.5])
+  quat: array([1., 0., 0., 0.])
+  rootid: array([1], dtype=int32)
+  sameframe: array([0], dtype=uint8)
+  simple: array([0], dtype=uint8)
+  subtreemass: array([3.62880131])
+  user: array([], dtype=float64)
+  weldid: array([1], dtype=int32)
+>
+
+
+
+data.model.nv --> Retorna o número de Gaus de Liberdada -- duas Juntas no caso
+2
+
+ 
+data.model.body_inertia --> Inercia dos corpos -- só tem 3 inercias por que esta sendo medido em questao ao sistema de coordenadas do corpo
+
+array([[0.        , 0.        , 0.        ],
+       [0.02261292, 0.02261292, 0.00297797],
+       [0.00878911, 0.00878911, 0.0006773 ]])
+
+
+data.model.body_mass
+array([0.        , 2.48709418, 1.14170713])
+    special variables
+    [0:3]  =
+    [np.float64(0.0), np.float64(2.4870941840919203), np.float64(1.141707130192091)]
+    dtype =
+    dtype('float64')
+    max =
+    np.float64(2.4870941840919203)
+    min =
+    np.float64(0.0)
+    shape =
+    (3,)
+    size =
+    3
+
+
+data.model.body_names --> comando não existe
+
+        data.model.body_names
+        Traceback (most recent call last):
+        File "<string>", line 1, in <module>
+        AttributeError: 'mujoco._structs.MjModel' object has no attribute 'body_names'. Did you mean: 'body_mass'?
+        data.model.body_names
+        Traceback (most recent call last):
+        File "<string>", line 1, in <module>
+        AttributeError: 'mujoco._structs.MjModel' object has no attribute 'body_names'. Did you mean: 'body_mass'?
+        data.model.body_name2id('link1')
+        Traceback (most recent call last):
+        File "<string>", line 1, in <module>
+        AttributeError: 'mujoco._structs.MjModel' object has no attribute 'body_name2id'. Did you mean: 'body_parentid'?
+
+    
+OPT -->
+
+data.model.opt.timestep
+0.005
+
+data.model.opt.integrator
+0
+
+data.model.opt.solver
+1
+
+data.model.opt.viscosity
+0.0
+
+data.model.opt.gravity
+array([ 0.  ,  0.  , -9.81])
+    special variables
+    [0:3]  =
+    [np.float64(0.0), np.float64(0.0), np.float64(-9.81)]
+    dtype =
+    dtype('float64')
+    max =
+    np.float64(0.0)
+    min =
+    np.float64(-9.81)
+    shape =
+    (3,)
+    size =
+    3
+
+####################################################################################################
+
+QPOS
+
+data.model.qpos0
+array([0., 0.])
+
+####################################################################################################
+
+XMAT --> Tem tres corpos --> Matriz de rotação do corpo
+
+data.xmat
+array([[1., 0., 0., 0., 1., 0., 0., 0., 1.],
+       [1., 0., 0., 0., 1., 0., 0., 0., 1.],
+       [1., 0., 0., 0., 1., 0., 0., 0., 1.]])
+
+data.xmat[1]
+array([1., 0., 0., 0., 1., 0., 0., 0., 1.])
+
+data.xmat[1].reshape(3, 3)
+array([[1., 0., 0.],
+       [0., 1., 0.],
+       [0., 0., 1.]])
+
+data.xmat[[model.body(i).name for i in range(model.nbody)].index('link1')].reshape(3, 3)
+
+data.xmat[1].reshape(3, 3).shape
+(3, 3)
+
+####################################################################################################
+
+Na API nova do MuJoCo (3.x), não existem mais métodos get_* como get_body_xmat, get_body_qpos, etc.
+Agora, tudo é acessado diretamente por atributos (arrays) e, quando necessário, você faz a indexação manual. 
+
+####################################################################################################
+
+XPOS
+
+data.xpos[1]
+array([0. , 0. , 0.5])
+
+data.xpos[2]
+array([0.25, 0.  , 0.5 ])
+
+####################################################################################################
+
+SITE
+
+Posição do site que é o end of factor (bem no meio na pontinha)
+Essa é a posição dele 
+
+data.site_xpos[1]
+array([0.5  , 0.   , 0.535])
+
+####################################################################################################
+
+Criar uma Jacobiana - não necessário para o exemplo, mas útil para entender como funciona no debug console
+
+jacp = np.zeros((3, model.nv))
+mujoco.mj_jacBodyCom(model, data, jacp, [model.body(i).name for i in range(model.nbody)].index('link2'))
+# 'link1' seria o nome do body escolhido
+
+Jacobiana do centro de massa de um corpo
+
+jacp = np.zeros((3, model.nv))
+mujoco.mj_jacBodyCom(model, data, jacp, body_id)
+
+Jacobiana de um site
+
+jacp = np.zeros((3, model.nv))
+mujoco.mj_jacSite(model, data, jacp, site_id)
+
+Jacobiana de um ponto específico (posição global)
+
+jacp = np.zeros((3, model.nv))
+mujoco.mj_jac(model, data, jacp, np.zeros((3, model.nv)), point, body_id)
+
+Jacobiana de orientação de um corpo
+
+jacr = np.zeros((3, model.nv))
+mujoco.mj_jacBodyCom(model, data, np.zeros((3, model.nv)), jacr, body_id)
+
+####################################################################################################
+
+Sensor
+
+data.sensordata
+array([], dtype=float64)
+

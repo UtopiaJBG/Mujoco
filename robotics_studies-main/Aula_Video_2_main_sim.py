@@ -1,141 +1,125 @@
 #!/usr/bin/env python3
 import mujoco
-import mujoco.viewer # Novo módulo para o visualizador
+import mujoco.viewer # Novo módulo para o visualizador VERSAO NOVA :D
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# --- Definições e Inicializações ---
 SCRIPT_ABSOLUTE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_XML_PATH = os.path.join(SCRIPT_ABSOLUTE_DIR, "assets", "two_link.xml")
 
-MODEL_XML_PATH = os.path.join(SCRIPT_ABSOLUTE_DIR, "assets", "full_kuka_all_joints_gravity.xml")
+model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
+print(f"Modelo XML: {MODEL_XML_PATH}")
 
-# Carregar o modelo MuJoCo
-try:
-    print(f"Carregando modelo de: {MODEL_XML_PATH}")
-    model = mujoco.MjModel.from_xml_path(MODEL_XML_PATH)
-except Exception as e:
-    print(f"Erro ao carregar o modelo XML: {e}")
-    exit(-1)
-
-# Criar a estrutura de dados da simulação (MjData)
-data = mujoco.MjData(model)
+################################################################################### 
 
 # sim = mujoco.MjSim(model) # VERSAO ANTIGA
  
 data = mujoco.MjData(model) # VERSAO NOVA
 # sim = mujoco.MjSim(model, data) # VERSAO NOVA 
 
-# --- Parâmetros do Controlador (do script original) ---
-# Estado desejado
-qpos_d = np.array([0, 0.461, 0, -0.817, 0, 0.69, 0])
-qvel_d = np.zeros(nv) # Original era np.zeros(7)
-qacc_d = np.zeros(nv) # Original era np.zeros(7)
+t = 0 # Tempo inicial
 
-print(f"Informações do Modelo Carregado: nq (posições) = {nq}, nv (velocidades/DoF) = {nv}")
+#Forma para carregar o Launcher do visualizador na nova API
 
-# Verificação de consistência para qpos_d (Kuka tem 7 DoF, nq e nv devem ser 7)
-if model.nq != 7 or model.nv != 7:
-    print(f"Alerta: O modelo carregado tem nq={model.nq}, nv={model.nv}. "
-          f"A lógica de qpos_d e Kp/Kd original era para 7 DoF.")
-if len(qpos_d) != model.nq: # qpos_d é definido mais abaixo, mas len(qpos_d) é 7
-     print(f"Alerta Crítico: O qpos_d hardcoded tem 7 elementos, mas model.nq é {model.nq}. "
-           "Isso causará problemas de dimensão.")
-     # exit(-1) # Descomente para sair se houver incompatibilidade
+with mujoco.viewer.launch_passive(model, data) as viewer: 
+    while viewer.is_running():
+        mujoco.mj_step(model, data)
+        viewer.sync()
 
-# Ganhos do controlador (Kp, Kd) - Lógica do script original
-Kp = np.eye(nv)
-Kd = np.eye(nv)
 
-# Aplicar lógica de ganhos original se nv for 7 (para Kuka)
-if nv == 7:
-    for i in range(nv):
-        Kp[i, i] = 10 * (1 - 0.15 * i)
-        Kd[i, i] = 1.2 * (Kp[i, i] / 2)**0.5
-    Kd[6, 6] = Kd[6, 6] / 50
-else:
-    # Fallback para ganhos genéricos se nv não for 7, como um exemplo
-    print(f"Aviso: Lógica de Kp/Kd original é para 7 DoF, mas o modelo atual tem nv={nv}. "
-          "Usando ganhos de fallback genéricos.")
-    default_kp_val = 100  # Exemplo de valor
-    default_kd_val = 20   # Exemplo de valor
-    for i in range(nv):
-        Kp[i, i] = default_kp_val
-        Kd[i, i] = default_kd_val
+# Visualizador com tempo de simulação controlado (t < 500 controla o número de iterações)
 
-#A$
-t = 0
+# with mujoco.viewer.launch_passive(model, data) as viewer:
+#     try:
+#         while viewer.is_running() and t > 500: # t < 500 controla o número de iterações
+#             mujoco.mj_step(model, data) # Avança um passo na simulação
+#             viewer.sync() # atualiza o visualizador com os dados mais recentes
+#             t += 1
+#     except KeyboardInterrupt:
+#         print("saindo")
 
-# --- Loop de Simulação e Controle ---
-print("Iniciando simulação... Pressione Ctrl+C no terminal para sair ou feche o visualizador.")
-with mujoco.viewer.launch_passive(model, data) as viewer:
-    try:
-        while t < n_timesteps and viewer.is_running():
-            # --- Leitura de Dados ---
-            qpos = data.qpos.copy()
-            qvel = data.qvel.copy()
-            qlog[t, :] = qpos
+# Uma vez que o visualizador está ativo, ele renderiza a simulação em tempo real.
 
-            # --- Cálculo do Controle (Computed Torque Control) ---
-            qpos_error = qpos_d - qpos
-            qvel_error = qvel_d - qvel
-            C_eq = data.qfrc_bias.copy()
-            v_control = qacc_d + Kd @ qvel_error + Kp @ qpos_error
 
-            # Matriz de massa/inércia M(q) ou H(q)
-            # CORREÇÃO: data.qM está na forma empacotada (nM elementos), precisamos da densa (nv,nv)
-            
-            # 1. Inicializar a matriz densa H com zeros
-            H_dense = np.zeros((model.nv, model.nv))  # Terá shape (7, 7) pois model.nv é 7
-            
-            # 2. Popular H_dense com a matriz de massa completa usando mj_fullM
-            #    data.qM aqui é o vetor esparso/empacotado de nM elementos (28 para nv=7)
-            mujoco.mj_fullM(model, H_dense, data.qM)
-            
-            # Agora H_dense é a matriz de massa (7,7) que podemos usar
-            
-            # --- Depuração Antes do Matmul (t={t}) ---
-            print(f"--- Depuração Antes do Matmul (t={t}) ---")
-            print(f"model.nv no loop: {model.nv}")
-            print(f"Shape de data.qM (empacotado): {data.qM.shape}") # Deve ser (28,)
-            print(f"Shape de H_dense (matriz de massa densa): {H_dense.shape}") # Deve ser (7,7)
-            print(f"Shape de v_control: {v_control.shape}") # Deve ser (7,)
-            
-            # Lei de controle: u = M(q) * v_control + C_eq
-            u = H_dense @ v_control + C_eq # Use H_dense aqui
+# Na API nova, o loop de simulação e visualização já está dentro do bloco with (Bloco acima)
 
-            data.ctrl[:] = u
-            mujoco.mj_step(model, data)
-            viewer.sync()
-            t += 1
+# try
+#     while True:
+#         viewer.render() 
+#         t += 1
+#         if t > 500
+#             break
+# except KeyboardInterrupt:
+#     print("saindo")
 
-    except KeyboardInterrupt:
-        print("Simulação interrompida pelo usuário.")
-    finally:
-        if viewer and viewer.is_running():
-            viewer.close()
-        print("Visualizador fechado.")
 
-# --- Plotar Resultados ---
-if t > 0: # Apenas plota se a simulação rodou por alguns passos
-    time_axis = np.arange(t) * model.opt.timestep # Eixo do tempo em segundos
 
-    plt.figure(figsize=(12, min(8, 2 * nq))) # Ajusta altura da figura baseada no num de juntas
-    plt.suptitle('Posição das Juntas ao Longo do Tempo (Novo `mujoco`)')
 
-    for i in range(nq):
-        plt.subplot(nq, 1, i + 1 if nq > 1 else 1) # Cria subplots para cada junta
-        plt.plot(time_axis, qlog[:t, i], label=f'q{i} (real)')
-        if i < len(qpos_d): # Verifica se qpos_d tem este componente
-            plt.plot(time_axis, np.full(t, qpos_d[i]), 'k--', label=f'q{i} (desejado)')
-        plt.ylabel(f'Posição q{i} (rad)')
-        plt.legend(loc='best')
-        if i == nq - 1 : # Adiciona label de tempo no último subplot
-            plt.xlabel('Tempo (s)')
-        else:
-            plt.gca().axes.get_xaxis().set_ticklabels([]) # Remove ticks do eixo x para subplots intermediários
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95]) # Ajusta layout para o título principal e labels
-    plt.show()
 
-print("Simulação concluída.")
+
+
+# n_timesteps = int(10/0.002)
+
+# qpos_d = np.array([0, 0.461, 0, -0.817, 0, 0.69, 0])
+# qvel_d = np.zeros(7)
+
+# qlog = np.zeros((n_timesteps, sim.model.nv))
+
+# Kp = np.eye(7)
+# Kd = np.eye(7)
+
+# for i in range(sim.model.nv):
+#     Kp[i, i] = 10*(1-0.15*i)
+#     Kd[i, i] = 1.2*(Kp[i, i]/2)**0.5
+
+# Kd[6, 6] = Kd[6, 6]/50
+
+# qacc_d = np.zeros(7)
+# qvel_d = np.zeros(7)
+
+# H = np.zeros(7*7)
+
+# def comp_gravity(sim):
+#     name_bodies = [sim.model.body_id2name(i) for i in range(4, 11)]
+#     mass_links = sim.model.body_mass[4:11]
+#     Jp_shape = (3, sim.model.nv)
+#     comp = np.zeros((sim.model.nv,))
+#     for body, mass in zip(name_bodies, mass_links):
+#         Jp = sim.data.get_body_jacp(body).reshape(Jp_shape)
+#         comp = comp - np.dot(Jp.T, sim.model.opt.gravity * mass)
+#     return comp
+
+# try:
+#     while t < n_timesteps:
+
+#         qlog[t] = sim.data.qpos
+
+#         qvel = sim.data.qvel
+#         qpos = sim.data.qpos
+
+#         qpos_erro = qpos_d - qpos
+#         qvel_erro = qvel_d - qvel
+
+#         C_eq = sim.data.qfrc_bias  # C_eq = C*qvel + tau_g
+
+#         v = qacc_d + Kd.dot(qvel_d - qvel) + Kp.dot(qpos_d - qpos)
+
+#         mujoco_py.functions.mj_fullM(sim.model, H, sim.data.qM)
+
+#         u = np.reshape(H, (7, 7)).dot(v) + C_eq
+
+#         sim.data.ctrl[:] = u
+
+#         sim.step()
+#         viewer.render()
+#         t += 1
+
+# except KeyboardInterrupt:
+#     print("saindo")
+
+# plt.plot(qlog)
+# plt.plot([qpos_d for _ in range(n_timesteps)], 'k--')
+# plt.show()
+
